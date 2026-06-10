@@ -95,6 +95,15 @@ cp -r "$BASE_DIR" "$GAME_DIR"
 rm -rf "$GAME_DIR/app/migrations" 2>/dev/null || true
 find "$GAME_DIR" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
 
+# SECURITY/HYGIENE: never inherit the base engine's git history, secrets, or backups.
+# - .git would point a new game at the engine's GitHub remote (push footgun + leak risk)
+# - .env / .env.* carry the engine's real secrets (a fresh .env is written below)
+# - *.bak files carry old/rotated secrets and dev clutter
+rm -rf "$GAME_DIR/.git" 2>/dev/null || true
+rm -f  "$GAME_DIR"/.env "$GAME_DIR"/.env.* 2>/dev/null || true
+find "$GAME_DIR" -name "*.bak" -type f -delete 2>/dev/null || true
+find "$GAME_DIR" -name "*bak" -type f -delete 2>/dev/null || true
+
 log "Base engine copied to $GAME_DIR"
 
 # ─── Update container names and ports ─────────────────────────
